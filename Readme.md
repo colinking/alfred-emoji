@@ -62,12 +62,12 @@ Trigger the workflow with either a custom hotkey or a custom snippet.
 ## Building the Workflow
 
 1. Clone this repository
-2. `npm install`
-3. `npm run build`
+2. `yarn install`
+3. `yarn run build`
 
 ## Loading the Workflow into Alfred
 
-1. `npm run load`
+1. `yarn run load`
 
 ## Inspiration
 

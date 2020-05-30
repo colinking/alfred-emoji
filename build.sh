@@ -8,7 +8,7 @@ parentDir=$(pwd)
 
 cd ${PWD}
 
-npm run webpack
+yarn webpack
 
 cd output
 

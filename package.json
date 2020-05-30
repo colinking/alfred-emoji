@@ -1,7 +1,6 @@
 {
   "version": "1.9.0",
   "scripts": {
-    "webpack": "webpack",
     "clean": "rm -f *.alfredworkflow; rm -rf output/*",
     "build": "./build.sh",
     "load": "npm run build && open alfred-emoji.alfredworkflow",
@@ -16,7 +15,8 @@
   ],
   "dependencies": {
     "emojilib": "^2.4.0",
-    "fontkit": "^1.7.7"
+    "fontkit": "^1.7.7",
+    "unicode-emoji-json": "^0.0.4"
   },
   "devDependencies": {
     "pre-commit": "^1.2.2",

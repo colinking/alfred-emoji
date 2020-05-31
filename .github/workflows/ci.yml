@@ -39,7 +39,6 @@ jobs:
         run: ./build.sh
 
       - name: Upload Artifacts
-        if: ${{ github.ref == 'master' && matrix.node-version == '14.x' }}
         uses: actions/upload-artifact@v2
         with:
           name: alfred-emoji.alfredworkflow

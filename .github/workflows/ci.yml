@@ -34,3 +34,14 @@ jobs:
 
       - name: Test
         run: yarn test
+
+      - name: Build Workflow
+        run: ./build.sh
+
+      - name: Upload Artifacts
+        if: ${{ matrix.node-version == '14.x' }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: alfred-emoji.alfredworkflow
+          path: alfred-emoji.alfredworkflow
+

@@ -3,7 +3,7 @@
   "scripts": {
     "clean": "rm -f *.alfredworkflow; rm -rf output/*",
     "build": "./build.sh",
-    "load": "npm run build && open alfred-emoji.alfredworkflow",
+    "load": "yarn run build && open alfred-emoji.alfredworkflow",
     "test": "tap 'test/**/*.test.js'",
     "test-ci": "tap --cov 'test/**/*.test.js'",
     "lint": "standard | snazzy",
@@ -14,7 +14,6 @@
     "test"
   ],
   "dependencies": {
-    "emojilib": "^2.4.0",
     "fontkit": "^1.7.7",
     "unicode-emoji-json": "^0.0.4"
   },

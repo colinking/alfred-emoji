@@ -1,5 +1,7 @@
-/* eslint-disable no-undef */
 'use strict'
+/* global ObjC, $ */
+
+const search = require('./search')
 
 function getenv (name) {
   if (typeof $ === 'undefined') return process.env[name]
@@ -12,7 +14,6 @@ function getenv (name) {
   }
 }
 
-const search = require('./search')
 const pasteByDefault = getenv('snippetapp')
 const skinTone = getenv('skin_tone')
 

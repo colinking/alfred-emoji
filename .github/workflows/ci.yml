@@ -1,23 +1,36 @@
 name: CI
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push]
+
+env:
+  CI: true
 
 jobs:
   build:
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x]
 
     runs-on: macos-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v1
-    - run: npm install
-    - run: npm test
-    - run: ./build.sh
-    - uses: actions/upload-artifact@v1
-      with:
-        name: alfred-emoji.alfredworkflow
-        path: alfred-emoji.alfredworkflow
+      - uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - uses: actions/cache@v2
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Install dependencies
+        run: yarn
+
+      - name: Test
+        run: yarn test

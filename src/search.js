@@ -1,95 +1,87 @@
 'use strict'
 
-const emojilib = require('emojilib')
-const emojiNames = emojilib.ordered
-const modifiers = emojilib.fitzpatrick_scale_modifiers
+// const emojiNames = emojilib.ordered
+// const modifiers = emojilib.fitzpatrick_scale_modifiers
 
-let skinTone
-let modifier
+const emojiMetadata = require('unicode-emoji-json/data-by-emoji.json')
+const ordering = require('unicode-emoji-json/data-ordered-emoji.json')
+const allModifiers = require('unicode-emoji-json/data-emoji-components.json')
+const keywords = require('./emoji-keywords.json')
+// Hair modifiers are already applied to the emoji list. We have to generate
+// skin-tone modified emojis ourselves.
+const skinToneModifiers = [
+  allModifiers.light_skin_tone,
+  allModifiers.medium_light_skin_tone,
+  allModifiers.medium_skin_tone,
+  allModifiers.medium_dark_skin_tone,
+  allModifiers.dark_skin_tone
+]
 
-let verb = 'Copy'
-let preposition = 'to clipboard'
-
-const resetWordsForPasteByDefault = () => {
-  verb = 'Paste'
-  preposition = 'as snippet'
-}
-
-const setSkinToneModifier = (tone) => {
-  skinTone = tone
-  modifier = skinTone ? modifiers[skinTone] : null
-}
-
-const addModifier = (emoji, modifier) => {
-  if (!modifier || !emoji.fitzpatrick_scale) return emoji.char
-  const zwj = new RegExp('‍', 'g')
-  return emoji.char.match(zwj) ? emoji.char.replace(zwj, modifier + '‍') : emoji.char + modifier
-}
-
-const getIconName = (emoji, name) => {
-  if (emoji.fitzpatrick_scale && skinTone && skinTone >= 0 && skinTone < 5) {
-    return `${name}_${skinTone}`
-  }
-  return name
-}
-
-const alfredItem = (emoji, name) => {
-  const modifiedEmoji = addModifier(emoji, modifier)
-  const icon = getIconName(emoji, name)
-  return {
-    uid: name,
-    title: name,
-    subtitle: `${verb} "${modifiedEmoji}" (${name}) ${preposition}`,
-    arg: modifiedEmoji,
-    autocomplete: name,
-    icon: { path: `./icons/${icon}.png` },
-    mods: {
-      alt: {
-        subtitle: `${verb} ":${name}:" (${emoji.char}) ${preposition}`,
-        arg: `:${name}:`,
-        icon: { path: `./icons/${name}.png` }
-      },
-      shift: {
-        subtitle: `${verb} "${emoji.char}" (${name}) ${preposition}`,
-        arg: emoji.char,
-        icon: { path: `./icons/${name}.png` }
-      }
+const withOptionalModifier = (metadata, emoji, opts) => {
+  if (metadata.fitzpatrick_scale && opts.skinTone && opts.skinTone >= 0 && opts.skinTone < 5) {
+    return {
+      emoji: emoji + skinToneModifiers[opts.skinTone],
+      name: `${metadata.name}_${opts.skinTone}`
     }
   }
+
+  return {
+    emoji,
+    name: metadata.name
+  }
 }
 
-const alfredItems = (names) => {
+const toAlfredItems = (emojis, opts) => {
   const items = []
-  names.forEach((name) => {
-    const emoji = emojilib.lib[name]
-    if (!emoji) return
-    items.push(alfredItem(emoji, name))
-  })
+
+  for (const emoji of emojis) {
+    const metadata = emojiMetadata[emoji]
+    const name = metadata.name
+    const { emoji: modifiedEmoji, name: modifiedName } = withOptionalModifier(metadata, emoji, opts)
+
+    items.push({
+      uid: name,
+      title: name,
+      subtitle: `${opts.verb} "${modifiedEmoji}" (${name}) ${opts.preposition}`,
+      arg: modifiedEmoji,
+      autocomplete: name,
+      icon: { path: `./icons/${modifiedName}.png` },
+      mods: {
+        alt: {
+          // Alt pastes the code instead of the emoji:
+          subtitle: `${opts.verb} ":${name}:" (${modifiedEmoji}) ${opts.preposition}`,
+          arg: `:${name}:`
+        },
+        shift: {
+          // Shift should remove modifiers:
+          subtitle: `${opts.verb} "${emoji}" (${name}) ${opts.preposition}`,
+          arg: emoji,
+          icon: { path: `./icons/${name}.png` }
+        }
+      }
+    })
+  }
+
   return { items }
 }
 
-const all = () => alfredItems(emojiNames)
+const matchEmojis = (query) => {
+  // :thumbs up: => ['thumbs', 'up']
+  const terms = query.replace(/[:]/g, '').split(/\s+/)
 
-const matches = (terms) => {
-  return emojiNames.filter((name) => {
+  return ordering.filter((emoji) => {
     return terms.every((term) => {
-      return name.includes(term) ||
-        emojilib.lib[name].keywords.some((keyword) => keyword.includes(term))
+      return emoji.includes(term) || keywords[emoji].some((keyword) => keyword.includes(term))
     })
   })
 }
 
-// :thumbs up: => ['thumbs', 'up']
-const parse = query => query.replace(/[:]/g, '').split(/\s+/)
+module.exports = function (query, skinTone, pasteByDefault = false) {
+  const results = matchEmojis(query)
 
-module.exports = function search (query, skinTone, pasteByDefault = false) {
-  if (pasteByDefault) resetWordsForPasteByDefault()
-
-  setSkinToneModifier(skinTone)
-
-  if (!query) return all()
-
-  const terms = parse(query)
-
-  return alfredItems(matches(terms))
+  return toAlfredItems(results, {
+    verb: pasteByDefault ? 'Paste' : 'Copy',
+    preposition: pasteByDefault ? 'as snippet' : 'to clipboard',
+    skinTone
+  })
 }

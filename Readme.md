@@ -1,9 +1,9 @@
-# alfred-emoji
-
-[![Build Status](https://travis-ci.org/jsumners/alfred-emoji.svg?branch=master)](https://travis-ci.org/jsumners/alfred-emoji)
+# alfred-emoji ![CI](https://github.com/colinking/alfred-emoji/workflows/CI/badge.svg)
 
 An [Alfred workflow][alfred] that makes it easy to search for emoji and copy
 them to the clipboard 🤘.
+
+This is a temporary fork of [`jsumners/alfred-emoji`](https://github.com/jsumners/alfred-emoji) that adds support for Unicode 12.0 emojis. It should become unnecessary when [v3.0.0 of `muan/emojilib`](https://github.com/muan/emojilib/pull/178) ships with the upstream unicode updates from [`muan/unicode-emoji-json`](https://github.com/muan/unicode-emoji-json).
 
 ![screenshot](images/screenshot.png)
 
